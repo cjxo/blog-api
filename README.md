@@ -16,3 +16,9 @@ Basically, my desired page will be like:
 I make the user edit the paragraph styles, text styles, etc? We will figure this out!
 
 6. Profile Drop Down. 
+
+TODOs
+[ ] Blog API Draft
+  - [X] Get Blog posts from all users
+  - [X] Get user profile and posts from that user.
+  - [ ] JWT Authentication

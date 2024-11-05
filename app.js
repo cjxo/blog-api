@@ -1,5 +1,9 @@
 import express from "express";
+import jwt from "jsonwebtoken";
+import 'dotenv/config';
 const app = express();
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 const dateNow = () => {
   return new Date().toISOString();
@@ -74,21 +78,50 @@ const fakePosts = [
     title: "Why Valorant Sucks?",
     content: "Because there are lazer beams, rockets, and dogs everywhere.",
     published: true,
-  }
+  },
+  {
+    id: 4,
+    author_id: 1,
+    created_at: dateNow(),
+    updated_at: dateNow(),
+    title: "Eigenvalues",
+    content: "Suppose T is a linear operator on V. A number lambda in F is called an eigenvalue of T if there exists v in V with v not equal to zero and Tv = lambda v.",
+    published: true
+  },
 ];
+
+// This should be stored in database!
+const refreshTokens = [];
+
+const verifyToken = (req, res, next) => {
+  const bearerHeader = req.headers["authorization"];
+  console.log(bearerHeader);
+
+  if (bearerHeader) {
+    const token = bearerHeader.split(' ')[1];
+    jwt.verify(token, process.env.ACCESS_TOKEN, (err, authData) => {
+      if (err) {
+        return res.status(403).json({ message: "Forbidden: Invalid or expired token." })
+      }
+
+      req.user = authData;
+      next();
+    });
+  } else {
+    return res.status(401).json({ message: "Unauthorized: No token provided." });
+  }
+};
 
 app.get("/", (req, res) => {
   res.json({
-    status: 200,
     message: "Welcome to BlogForge API!",
   });
 });
 
 app.get("/posts", (req, res) => {
   const result = {
-    status: 200,
     message: "Request Granted.",
-    posts: []
+    posts: [],
   };
 
   fakePosts.forEach(({ id, author_id, created_at, updated_at, title, content, published }) => {
@@ -107,25 +140,83 @@ app.get("/posts", (req, res) => {
   res.json(result);
 });
 
+app.post("/posts", verifyToken, (req, res) => {
+  res.json({
+    message: "Post Created.",
+  });
+});
+
 app.get("/user/:id", (req, res) => {
   const userID  = parseInt(req.params.id);
   const user    = fakeUsers[userID];
   const profile = fakeProfiles[userID];
+  const posts   = [];
+
+  fakePosts.forEach(({ id, author_id, created_at, updated_at, title, content, published }) => {
+    if (author_id === userID) {
+      posts.push({
+        id,
+        created_at,
+        updated_at,
+        title,
+        content,
+      });
+    }
+  });
   
   const userIdentity = {
     username: user.username,
     bio: profile.bio,
     date_joined: profile.date_joined,
+    posts,
   };
 
   res.json({
-    status: 200,
     message: "Request Granted.",
     user: userIdentity,
   });
 });
 
-app.get("/sign-in", (req, res) => {
+app.post("/token", (req, res) => {
+  const refreshToken = req.headers["token"];
+  if (!refreshToken) {
+    return res.status(401).json({ message: "Unauthorized: No token provided." });
+  }
+
+  if (!refreshTokens.includes(refreshToken)) {
+    return res.status(403).json({ message: "Forbidden: Invalid token." });
+  }
+
+  jwt.verify(refreshToken, process.env.REFRESH_TOKEN, (err, user) => {
+    if (err) {
+      return res.status(403).json({ message: "Forbidden: Invalid token." });
+    }
+    
+    const accessToken = jwt.sign({ user: user }, process.env.ACCESS_TOKEN, { expiresIn: '30s' });
+    res.json({ accessToken });
+  });
+});
+
+app.delete("sign-out", (req, res) => {
+  const refreshToken = req.headers["token"];
+  if (!refreshToken) {
+    return res.status(401).json({ message: "Unauthorized: No token provided." });
+  }
+  
+  refreshTokens.filter(token => token !== refreshToken);
+  res.status(204).json({ message: "Deleted refresh token." });
+});
+
+app.post("/sign-in", (req, res) => {
+  const user = fakeUsers[0];
+  const accessToken  = jwt.sign({ user: user }, process.env.ACCESS_TOKEN, { expiresIn: '30s' });
+  const refreshToken = jwt.sign({ user: user }, process.env.REFRESH_TOKEN);
+  refreshTokens.push(refreshToken);
+  res.json({
+    message: "Login Successful.",
+    accessToken: accessToken,
+    refreshToken: refreshToken,
+  }); 
 });
 
 app.listen(3000, () => {
