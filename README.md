@@ -18,7 +18,15 @@ I make the user edit the paragraph styles, text styles, etc? We will figure this
 6. Profile Drop Down. 
 
 TODOs
-[ ] Blog API Draft
+- [ ] Blog API Draft/Beginnigns
   - [X] Get Blog posts from all users
   - [X] Get user profile and posts from that user.
-  - [ ] JWT Authentication
+  - [X] JWT Authentication
+  - [X] STORE USER DB
+  - [ ] Allow Sign-in users to create posts. Request Tokens in DB.
+  - [ ] Separate files into controllers and routes to satisfy clean code people
+  - [ ] Return profile of user that contains all of published posts, profile, etc.
+  - [ ] Remove mock database
+
+- [ ] Begin Front End Design
+  - [ ] Remember that the sidebar contains the things mentioned above!

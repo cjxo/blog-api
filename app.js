@@ -1,6 +1,9 @@
 import express from "express";
 import jwt from "jsonwebtoken";
+import bcrypt from "bcryptjs";
 import 'dotenv/config';
+import db from "./db/query.js";
+
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -91,7 +94,7 @@ const fakePosts = [
 ];
 
 // This should be stored in database!
-const refreshTokens = [];
+let refreshTokens = [];
 
 const verifyToken = (req, res, next) => {
   const bearerHeader = req.headers["authorization"];
@@ -197,26 +200,82 @@ app.post("/token", (req, res) => {
   });
 });
 
-app.delete("sign-out", (req, res) => {
+app.delete("sign-out", async (req, res) => {
   const refreshToken = req.headers["token"];
   if (!refreshToken) {
     return res.status(401).json({ message: "Unauthorized: No token provided." });
   }
   
-  refreshTokens.filter(token => token !== refreshToken);
+  //await db.deleteRefreshTokenFromUser();
+  refreshTokens = refreshTokens.filter(token => token !== refreshToken);
   res.status(204).json({ message: "Deleted refresh token." });
 });
 
-app.post("/sign-in", (req, res) => {
-  const user = fakeUsers[0];
-  const accessToken  = jwt.sign({ user: user }, process.env.ACCESS_TOKEN, { expiresIn: '30s' });
-  const refreshToken = jwt.sign({ user: user }, process.env.REFRESH_TOKEN);
-  refreshTokens.push(refreshToken);
-  res.json({
-    message: "Login Successful.",
-    accessToken: accessToken,
-    refreshToken: refreshToken,
-  }); 
+app.post("/sign-up", async (req, res, next) => {
+  try {
+    if (!req.body.username || !req.body.email || !req.body.password) {
+      res.status(400).json({
+        message: "All fields [username, email, passwords] are required."
+      });
+    }
+
+    const { usernameExists, emailExists } = await db.usernameOrEmailExists(req.body.username, req.body.email);
+    if (usernameExists) {
+      return res.status(409).json({
+        message: "Username already exists."
+      });
+    }
+
+    if (emailExists) {
+      return res.status(409).json({
+        message: "Email already exists."
+      });
+    }
+
+    await db.createNewUserAndReturnID(req.body.username, req.body.password, req.body.email);
+    res.status(201).json({
+      message: "Successfully created user. Please sign in."
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
+app.post("/sign-in", async (req, res) => {
+  const username = req.body.username;
+  const password = req.body.password;
+  const email    = req.body.email;
+
+  try {
+    const user = await db.getUserFromUsername(username);
+
+    if (!user) {
+      return res.status(400).json({ invalidUserName: true });
+    }
+
+    const passwordsMatched = await bcrypt.compare(password, user.password);
+    if (!passwordsMatched) {
+      return res.status(400).json({ invalidUserPassword: true });
+    }
+
+    const accessToken  = jwt.sign({ user: user }, process.env.ACCESS_TOKEN, { expiresIn: '10m' });
+    const refreshToken = jwt.sign({ user: user }, process.env.REFRESH_TOKEN);
+    //await db.insertRequestTokenToUser(user.id, refreshToken);
+    res.json({
+      message: "Sign In Successful.",
+      accessToken: accessToken,
+      refreshToken: refreshToken,
+    });
+  } catch (err) {
+    next(err);
+  } 
+});
+
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).json({
+    message: "Internal Server Error."
+  });
 });
 
 app.listen(3000, () => {

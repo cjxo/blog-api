@@ -1,7 +1,7 @@
 import pg from "pg";
 import 'dotenv/config';
 
-const pool = pg.Pool({
+const pool = new pg.Pool({
   user: process.env.PGUSER,
   password: process.env.PGPASSWORD,
   host: process.env.PGHOST,
