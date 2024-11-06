@@ -25,7 +25,7 @@ TODOs
   - [X] STORE USER DB
   - [X] Allow Sign-in users to create posts. Request Tokens in DB.
   - [X] Remove password as input in token signing
-  - [ ] Separate files into controllers and routes to satisfy clean code people
+  - [X] Separate files into controllers and routes to satisfy clean code people
   - [ ] Return profile of user that contains all of published posts, profile, etc.
   - [ ] Remove mock database
 
