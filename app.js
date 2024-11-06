@@ -93,9 +93,6 @@ const fakePosts = [
   },
 ];
 
-// This should be stored in database!
-let refreshTokens = [];
-
 const verifyToken = (req, res, next) => {
   const bearerHeader = req.headers["authorization"];
   console.log(bearerHeader);
@@ -107,7 +104,7 @@ const verifyToken = (req, res, next) => {
         return res.status(403).json({ message: "Forbidden: Invalid or expired token." })
       }
 
-      req.user = authData;
+      req.user = authData.data;
       next();
     });
   } else {
@@ -144,6 +141,7 @@ app.get("/posts", (req, res) => {
 });
 
 app.post("/posts", verifyToken, (req, res) => {
+  console.log(req.user)
   res.json({
     message: "Post Created.",
   });
@@ -180,35 +178,65 @@ app.get("/user/:id", (req, res) => {
   });
 });
 
-app.post("/token", (req, res) => {
+const createAccessToken = (user) => {
+  return jwt.sign({ user }, process.env.ACCESS_TOKEN, { expiresIn: '30s' });
+};
+
+app.post("/token", async (req, res, next) => {
   const refreshToken = req.headers["token"];
   if (!refreshToken) {
     return res.status(401).json({ message: "Unauthorized: No token provided." });
   }
 
-  if (!refreshTokens.includes(refreshToken)) {
-    return res.status(403).json({ message: "Forbidden: Invalid token." });
-  }
+  try { 
+    jwt.verify(refreshToken, process.env.REFRESH_TOKEN, async (err, authData) => {
+      if (err) {
+        return res.status(403).json({ message: "Forbidden: Invalid token." });
+      }
+      
+      const user = authData.user;
+      const desiredUser = {
+        id: user.id,
+        username: user.username,
+      };
 
-  jwt.verify(refreshToken, process.env.REFRESH_TOKEN, (err, user) => {
-    if (err) {
-      return res.status(403).json({ message: "Forbidden: Invalid token." });
-    }
-    
-    const accessToken = jwt.sign({ user: user }, process.env.ACCESS_TOKEN, { expiresIn: '30s' });
-    res.json({ accessToken });
-  });
+      const hasRefreshToken = await db.userHasRefreshToken(user.id, refreshToken);
+      if (!hasRefreshToken) {
+        return res.status(403).json({ message: "Forbidden: Invalid token." });
+      }
+
+      const accessToken = createAccessToken(desiredUser);
+      res.json({ accessToken });
+    });
+  } catch (err) {
+    return next(err);
+  }
 });
 
-app.delete("sign-out", async (req, res) => {
+app.delete("/sign-out", async (req, res, next) => {
   const refreshToken = req.headers["token"];
   if (!refreshToken) {
     return res.status(401).json({ message: "Unauthorized: No token provided." });
   }
-  
-  //await db.deleteRefreshTokenFromUser();
-  refreshTokens = refreshTokens.filter(token => token !== refreshToken);
-  res.status(204).json({ message: "Deleted refresh token." });
+
+  try { 
+    jwt.verify(refreshToken, process.env.REFRESH_TOKEN, async (err, authData) => {
+      if (err) {
+        return res.status(403).json({ message: "Forbidden: Invalid token." })
+      }
+      
+      const user = authData.user;
+      const hasRefreshToken = await db.userHasRefreshToken(user.id, refreshToken); 
+      if (!hasRefreshToken) {
+        return res.status(403).json({ message: "Forbidden: Invalid token." });
+      }
+
+      await db.deleteRefreshTokenFromUser(user.id, refreshToken);
+      res.status(204).json({ message: "Deleted refresh token." });
+    });
+  } catch (err) {
+    next(err);
+  }
 });
 
 app.post("/sign-up", async (req, res, next) => {
@@ -241,10 +269,9 @@ app.post("/sign-up", async (req, res, next) => {
   }
 });
 
-app.post("/sign-in", async (req, res) => {
+app.post("/sign-in", async (req, res, next) => {
   const username = req.body.username;
   const password = req.body.password;
-  const email    = req.body.email;
 
   try {
     const user = await db.getUserFromUsername(username);
@@ -258,9 +285,14 @@ app.post("/sign-in", async (req, res) => {
       return res.status(400).json({ invalidUserPassword: true });
     }
 
-    const accessToken  = jwt.sign({ user: user }, process.env.ACCESS_TOKEN, { expiresIn: '10m' });
-    const refreshToken = jwt.sign({ user: user }, process.env.REFRESH_TOKEN);
-    //await db.insertRequestTokenToUser(user.id, refreshToken);
+    const desiredUser = {
+      id: user.id,
+      username: user.username,
+    };
+
+    const accessToken  = createAccessToken(desiredUser);
+    const refreshToken = jwt.sign({ user: desiredUser }, process.env.REFRESH_TOKEN);
+    await db.insertRefreshTokenToUser(user.id, refreshToken);
     res.json({
       message: "Sign In Successful.",
       accessToken: accessToken,
@@ -274,7 +306,7 @@ app.post("/sign-in", async (req, res) => {
 app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).json({
-    message: "Internal Server Error."
+    message: "Internal Server Error: " + err.stack
   });
 });
 

@@ -36,14 +36,33 @@ const getUserFromUsername = async (username) => {
     WHERE username = $1;
   `;
 
-  const { rows } = await db.query(SQL, [username]);
+  const { rows } = await pool.query(SQL, [username]);
   return rows[0];
 };
 
-const insertRequestTokenToUser = async (userID, token) => {
+const insertRefreshTokenToUser = async (userID, token) => {
   const SQL = `
     INSERT INTO bf_per_user_refresh_token (user_id, token)
     VALUES ($1, $2);
+  `;
+
+  await pool.query(SQL, [userID, token]);
+};
+
+const userHasRefreshToken = async (userID, token) => {
+  const SQL = `
+    SELECT * FROM bf_per_user_refresh_token
+    WHERE (user_id = $1) AND (token = $2);
+  `;
+
+  const { rows } = await pool.query(SQL, [userID, token]);
+  return rows.length > 0;
+};
+
+const deleteRefreshTokenFromUser = async (userID, token) => {
+  const SQL = `
+    DELETE FROM bf_per_user_refresh_token
+    WHERE (user_id = $1) AND (token = $2);
   `;
 
   await pool.query(SQL, [userID, token]);
@@ -53,5 +72,7 @@ export default {
   usernameOrEmailExists,
   createNewUserAndReturnID,
   getUserFromUsername,
-  insertRequestTokenToUser,
+  insertRefreshTokenToUser,
+  userHasRefreshToken,
+  deleteRefreshTokenFromUser,
 };
