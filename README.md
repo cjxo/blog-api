@@ -26,8 +26,11 @@ TODOs
   - [X] Allow Sign-in users to create posts. Request Tokens in DB.
   - [X] Remove password as input in token signing
   - [X] Separate files into controllers and routes to satisfy clean code people
-  - [ ] Return profile of user that contains all of published posts, profile, etc.
-  - [ ] Remove mock database
+  - [X] Ability To Display Posts
+  - [X] Ability To Craete posts
+  - [X] Return profile of user that contains all of published posts, profile, etc.
+  - [X] Remove mock database
 
 - [ ] Begin Front End Design
   - [ ] Remember that the sidebar contains the things mentioned above!
+  - [ ] Ability To Update Bio (BACKEND)

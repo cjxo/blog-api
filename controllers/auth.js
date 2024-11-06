@@ -9,7 +9,6 @@ const createAccessToken = (user) => {
 
 const verifyToken = (req, res, next) => {
   const bearerHeader = req.headers["authorization"];
-  console.log(bearerHeader);
 
   if (bearerHeader) {
     const token = bearerHeader.split(' ')[1];
@@ -18,7 +17,7 @@ const verifyToken = (req, res, next) => {
         return res.status(403).json({ message: "Forbidden: Invalid or expired token." })
       }
 
-      req.user = authData.data;
+      req.user = authData.user;
       next();
     });
   } else {

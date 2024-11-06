@@ -68,6 +68,58 @@ const deleteRefreshTokenFromUser = async (userID, token) => {
   await pool.query(SQL, [userID, token]);
 };
 
+const createUserPost = async (userID, title, content, published) => {
+  const SQL = `
+    INSERT INTO bf_post (author_id, title, content, published)
+    VALUES ($1, $2, $3, $4);
+  `;
+
+  await pool.query(SQL, [userID, title, content, published]);
+};
+
+const getAllPublishedPosts = async () => {
+  const SQL = `
+    SELECT bf_post.id, username as author, author_id, created_at, updated_at, title, content
+    FROM bf_post
+    INNER JOIN bf_user
+    ON bf_user.id = bf_post.author_id
+    WHERE published = TRUE;
+  `;
+
+  const { rows } = await pool.query(SQL);
+  return rows;
+};
+
+const getUserPublishedPosts = async (userID) => {
+  const SQL = `
+    SELECT bf_post.id, username as author, author_id, created_at, updated_at, title, content
+    FROM bf_post
+    INNER JOIN bf_user
+    ON bf_user.id = bf_post.author_id
+    WHERE (published = TRUE) AND (bf_user.id = $1);
+  `;
+
+  const { rows } = await pool.query(SQL, [userID]);
+  return rows;
+};
+
+const getUserDetails = async (userID) => {
+  const SQLProfile = `
+    SELECT bf_user.id, username, bio, date_joined
+    FROM bf_user_profile
+    INNER JOIN bf_user
+    ON bf_user.id = bf_user_profile.user_id
+    WHERE bf_user.id = $1;
+  `;
+  
+  const { rows } = await pool.query(SQLProfile, [userID]);
+  const posts = await getUserPublishedPosts(userID);
+  return {
+    ...rows[0],
+    posts: posts
+  };
+};
+
 export default {
   usernameOrEmailExists,
   createNewUserAndReturnID,
@@ -75,4 +127,7 @@ export default {
   insertRefreshTokenToUser,
   userHasRefreshToken,
   deleteRefreshTokenFromUser,
+  createUserPost,
+  getAllPublishedPosts,
+  getUserDetails,
 };
