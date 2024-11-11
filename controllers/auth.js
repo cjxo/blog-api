@@ -84,13 +84,27 @@ const removeRefreshTokenFromUser = async (req, res, next) => {
 
 const createNewUser = async (req, res, next) => {
   try {
-    if (!req.body.username || !req.body.email || !req.body.password) {
+    if (!req.body.first_name || !req.body.last_name || !req.body.username || !req.body.email || !req.body.password) {
       res.status(400).json({
-        message: "All fields [username, email, passwords] are required."
+        message: "All fields [first_name, last_name, username, email, passwords] are required."
       });
     }
 
-    const { usernameExists, emailExists } = await db.usernameOrEmailExists(req.body.username, req.body.email);
+    const { firstNameExists, lastNameExists, usernameExists, emailExists } = await db.checkUserFieldsExistence(req.body.first_name, req.body.last_name, req.body.username, req.body.email);
+    if (firstNameExists) {
+      return res.status(409).json({
+        message: "First Name already exists."
+      });
+    }
+
+    /*
+     What if they're brothers/sisters/mom/dad? Lol
+    if (lastNameExists) {
+      return res.status(409).json({
+        message: "Last Name already exists."
+      });
+    }*/
+
     if (usernameExists) {
       return res.status(409).json({
         message: "Username already exists."
@@ -103,7 +117,7 @@ const createNewUser = async (req, res, next) => {
       });
     }
 
-    await db.createNewUserAndReturnID(req.body.username, req.body.password, req.body.email);
+    await db.createNewUserAndReturnID(req.body.first_name, req.body.last_name, req.body.username, req.body.email, req.body.password);
     res.status(201).json({
       message: "Successfully created user. Please sign in."
     });

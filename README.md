@@ -18,7 +18,7 @@ I make the user edit the paragraph styles, text styles, etc? We will figure this
 6. Profile Drop Down. 
 
 TODOs
-- [ ] Blog API Draft/Beginnigns
+- [X] Blog API Draft/Beginnigns
   - [X] Get Blog posts from all users
   - [X] Get user profile and posts from that user.
   - [X] JWT Authentication
@@ -32,5 +32,28 @@ TODOs
   - [X] Remove mock database
 
 - [ ] Begin Front End Design
+  - Resources:
+    1. https://react.dev/learn
+    2. https://reactrouter.com/en/main/start/tutorial
+    3. https://www.theodinproject.com/lessons/node-path-react-new-react-router
+    4. https://expressjs.com/en/resources/middleware/cors.html,
+    5. https://www.theodinproject.com/lessons/nodejs-api-basics, 
+    6. https://reactrouter.com/en/main/components/navigate
+
+  - [ ] Welcome Page for nonregistered users.
+    - [X] Feature list completion.
+      - [X] A button per feature that says create your own blog.
+    - [X] Sign Up Page
+    - [X] https://reactrouter.com/en/main/start/tutorial
+        - route nesting! Basically, main homepage as outlet and signup page as outlet, etc!
+    - [X] Sign In page
+
+    - [ ] Working Sign Up Page! Remember CORS?
+
+    - [ ] Working Sign In Page!
+  
+- [ ] An applicaton when user is signed-in (actual dashboard stuff)
   - [ ] Remember that the sidebar contains the things mentioned above!
   - [ ] Ability To Update Bio (BACKEND)
+
+- [ ] After basic dashboard posts, go back to homepage and implement 'see user posts' thingy

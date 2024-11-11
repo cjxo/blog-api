@@ -2,16 +2,19 @@ import pg from 'pg';
 import 'dotenv/config';
 
 const SQL = `
-  -- DROP TABLE IF EXISTS bf_comment;
-  -- DROP TABLE IF EXISTS bf_post;
-  -- DROP TABLE IF EXISTS bf_user_profile;
-  -- DROP TABLE IF EXISTS bf_user;
+  --DROP TABLE IF EXISTS bf_comment;
+  --DROP TABLE IF EXISTS bf_post;
+  --DROP TABLE IF EXISTS bf_user_profile;
+  --DROP TABLE IF EXISTS bf_per_user_refresh_token;
+  --DROP TABLE IF EXISTS bf_user;
 
   CREATE TABLE IF NOT EXISTS bf_user (
-    id        INTEGER        PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
-    username  VARCHAR(64)    UNIQUE NOT NULL,
-    password  TEXT           NOT NULL,
-    email     VARCHAR(128)   UNIQUE NOT NULL
+    id          INTEGER        PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+    first_name  TEXT           UNIQUE NOT NULL,
+    last_name   TEXT           UNIQUE NOT NULL,
+    username    VARCHAR(64)    UNIQUE NOT NULL,
+    email       VARCHAR(128)   UNIQUE NOT NULL,
+    password    TEXT           NOT NULL
   );
 
   CREATE TABLE IF NOT EXISTS bf_per_user_refresh_token (

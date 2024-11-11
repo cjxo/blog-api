@@ -1,32 +1,34 @@
 import bcrypt from "bcryptjs";
 import pool from "./pool.js";
 
-const usernameOrEmailExists = async (user, email) => {
+const checkUserFieldsExistence = async (firstName, lastName, username, email) => {
   const SQL = `
     SELECT * FROM bf_user
-    WHERE (username = $1) OR (email = $2);
+    WHERE (first_name = $1) OR (last_name = $2) OR (username = $3) OR (email = $4);
   `;
 
-  const { rows } = await pool.query(SQL, [user, email]);
+  const { rows } = await pool.query(SQL, [firstName, lastName, username, email]);
   if (rows.length === 0) {
-    return { usernameExists: false, emailExists: false };
+    return { firstNameExists: false, lastNameExists: false, usernameExists: false, emailExists: false };
   }
 
-  const usernameExists = rows.some(row => row.username === user);
+  const firstNameExists = rows.some(row => row.first_name === firstName);
+  const lastNameExists = rows.some(row => row.last_name === lastName);
+  const usernameExists = rows.some(row => row.username === username);
   const emailExists = rows.some(row => row.email === email);
-  return { usernameExists, emailExists };
+  return { firstNameExists, lastNameExists, usernameExists, emailExists };
 };
 
-const createNewUserAndReturnID = async (user, password, email) => {
+const createNewUserAndReturnID = async (firstName, lastName, username, email, password) => {
   const saltAndHash = await bcrypt.hash(password, 10);
 
   const SQL = `
-    INSERT INTO bf_user (username, password, email)
-    VALUES ($1, $2, $3)
+    INSERT INTO bf_user (first_name, last_name, username, email, password)
+    VALUES ($1, $2, $3, $4, $5)
     RETURNING id;
   `;
 
-  const { rows } = await pool.query(SQL, [user, saltAndHash, email]);
+  const { rows } = await pool.query(SQL, [firstName, lastName, username, email, saltAndHash]);
   return rows[0].id;
 };
 
@@ -121,7 +123,7 @@ const getUserDetails = async (userID) => {
 };
 
 export default {
-  usernameOrEmailExists,
+  checkUserFieldsExistence,
   createNewUserAndReturnID,
   getUserFromUsername,
   insertRefreshTokenToUser,
