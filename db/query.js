@@ -1,22 +1,21 @@
 import bcrypt from "bcryptjs";
 import pool from "./pool.js";
 
-const checkUserFieldsExistence = async (firstName, lastName, username, email) => {
+const checkUserFieldsExistence = async (firstName, username, email) => {
   const SQL = `
     SELECT * FROM bf_user
-    WHERE (first_name = $1) OR (last_name = $2) OR (username = $3) OR (email = $4);
+    WHERE (first_name = $1) OR (username = $2) OR (email = $3);
   `;
 
-  const { rows } = await pool.query(SQL, [firstName, lastName, username, email]);
+  const { rows } = await pool.query(SQL, [firstName, username, email]);
   if (rows.length === 0) {
-    return { firstNameExists: false, lastNameExists: false, usernameExists: false, emailExists: false };
+    return { firstNameExists: false, usernameExists: false, emailExists: false };
   }
 
   const firstNameExists = rows.some(row => row.first_name === firstName);
-  const lastNameExists = rows.some(row => row.last_name === lastName);
   const usernameExists = rows.some(row => row.username === username);
   const emailExists = rows.some(row => row.email === email);
-  return { firstNameExists, lastNameExists, usernameExists, emailExists };
+  return { firstNameExists, usernameExists, emailExists };
 };
 
 const createNewUserAndReturnID = async (firstName, lastName, username, email, password) => {
@@ -44,30 +43,51 @@ const getUserFromUsername = async (username) => {
 
 const insertRefreshTokenToUser = async (userID, token) => {
   const SQL = `
-    INSERT INTO bf_per_user_refresh_token (user_id, token)
-    VALUES ($1, $2);
+    INSERT INTO bf_per_user_refresh_token (user_id, token, ref_cnt)
+    VALUES ($1, $2, 1);
   `;
 
   await pool.query(SQL, [userID, token]);
 };
 
-const userHasRefreshToken = async (userID, token) => {
+const increaseTokenRefCount = async (userID) => {
+  const SQL = `
+    UPDATE bf_per_user_refresh_token
+    SET ref_cnt = ref_cnt + 1
+    WHERE user_id = $1;
+  `;
+  await pool.query(SQL, [userID]);
+};
+
+const getRefreshTokenFromUserID = async (userID) => {
   const SQL = `
     SELECT * FROM bf_per_user_refresh_token
-    WHERE (user_id = $1) AND (token = $2);
+    WHERE user_id = $1;
   `;
 
-  const { rows } = await pool.query(SQL, [userID, token]);
-  return rows.length > 0;
+  const { rows } = await pool.query(SQL, [userID]);
+  if (rows.length > 0) {
+    return rows[0].token;
+  } else {
+    return null;
+  }
 };
 
-const deleteRefreshTokenFromUser = async (userID, token) => {
+const deleteRefreshTokenFromUser = async (userID) => {
   const SQL = `
-    DELETE FROM bf_per_user_refresh_token
-    WHERE (user_id = $1) AND (token = $2);
+    UPDATE bf_per_user_refresh_token
+    SET ref_cnt = GREATEST(ref_cnt - 1, 0)
+    WHERE user_id = $1; 
   `;
 
-  await pool.query(SQL, [userID, token]);
+  await pool.query(SQL, [userID]);
+
+  const DELETESQL = `
+    DELETE FROM bf_per_user_refresh_token
+    WHERE ref_cnt <= 0;
+  `;
+  
+  await pool.query(DELETESQL);
 };
 
 const createUserPost = async (userID, title, content, published) => {
@@ -127,7 +147,8 @@ export default {
   createNewUserAndReturnID,
   getUserFromUsername,
   insertRefreshTokenToUser,
-  userHasRefreshToken,
+  increaseTokenRefCount,
+  getRefreshTokenFromUserID,
   deleteRefreshTokenFromUser,
   createUserPost,
   getAllPublishedPosts,

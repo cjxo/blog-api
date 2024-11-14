@@ -48,12 +48,32 @@ TODOs
         - route nesting! Basically, main homepage as outlet and signup page as outlet, etc!
     - [X] Sign In page
 
-    - [ ] Working Sign Up Page! Remember CORS?
+    - [X] Working Sign Up Page! Remember CORS?
 
-    - [ ] Working Sign In Page!
+    - [X] Working Sign In Page! 
+      - Ok, so I should somehow know how to do authentication using react-router-dom... I also need to rearrange my routes like different appearance for users who arent signed in, etc.
+      - There is also something called refresh token, and I need to make that thing secure as possible. Internet says something about httpOnly, and some crazy terms that IDK about.
+      - What about having sing-up, sign-in, and homepage have their own pages instead of separating them?
+      - [X] How can we make JWT Tokens persist?
+        - https://blog.logrocket.com/jwt-authentication-best-practices/
+        - https://hasura.io/blog/best-practices-of-using-jwt-with-graphql
+        - https://blog.logrocket.com/authentication-react-router-v6/
+      - [X] If the user is signed in, we should prevent them from going to signup / signin
+        and instead redirect them to the Dashboard page! This implies developing the dashboard (dummy) first
+      - [X] Conditionally rendering NavBar/Homepage stuff if not signed in! 
+      - [ ] Cookie Parser and JWT.
+        - https://dev.to/franciscomendes10866/using-cookies-with-jwt-in-node-js-8fn
+        - https://www.youtube.com/watch?v=eJ3YysWaP_A&t=582s
+        - https://www.npmjs.com/package/cookie-parser
+        - https://medium.com/@techsuneel99/jwt-authentication-in-nodejs-refresh-jwt-with-cookie-based-token-37348ff685bf
+        - https://dev.to/franciscomendes10866/using-cookies-with-jwt-in-node-js-8fn
+        - [X] fix signup and signin redirection when authed.
+        - [X] form data instead of useState of fields
   
 - [ ] An applicaton when user is signed-in (actual dashboard stuff)
   - [ ] Remember that the sidebar contains the things mentioned above!
+  - [ ] Complete Sidebar.
+    - [ ] Sidebar Icons. How can we colour them?
   - [ ] Ability To Update Bio (BACKEND)
 
 - [ ] After basic dashboard posts, go back to homepage and implement 'see user posts' thingy

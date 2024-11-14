@@ -4,7 +4,7 @@ import bcrypt from "bcryptjs";
 import 'dotenv/config';
 
 const createAccessToken = (user) => {
-  return jwt.sign({ user }, process.env.ACCESS_TOKEN, { expiresIn: '30s' });
+  return jwt.sign({ user }, process.env.ACCESS_TOKEN, { expiresIn: '1d' });
 };
 
 const verifyToken = (req, res, next) => {
@@ -26,7 +26,8 @@ const verifyToken = (req, res, next) => {
 };
 
 const acquireNewAccessTokenFromRefreshToken = async (req, res, next) => {
-  const refreshToken = req.headers["token"];
+  const refreshToken = req.cookies.refreshToken;
+
   if (!refreshToken) {
     return res.status(401).json({ message: "Unauthorized: No token provided." });
   }
@@ -43,8 +44,8 @@ const acquireNewAccessTokenFromRefreshToken = async (req, res, next) => {
         username: user.username,
       };
 
-      const hasRefreshToken = await db.userHasRefreshToken(user.id, refreshToken);
-      if (!hasRefreshToken) {
+      const dbRefreshToken = await db.getRefreshTokenFromUserID(user.id);
+      if (!dbRefreshToken || (dbRefreshToken !== refreshToken)) {
         return res.status(403).json({ message: "Forbidden: Invalid token." });
       }
 
@@ -57,7 +58,7 @@ const acquireNewAccessTokenFromRefreshToken = async (req, res, next) => {
 };
 
 const removeRefreshTokenFromUser = async (req, res, next) => {
-  const refreshToken = req.headers["token"];
+  const refreshToken = req.cookies.refreshToken;
   if (!refreshToken) {
     return res.status(401).json({ message: "Unauthorized: No token provided." });
   }
@@ -69,13 +70,15 @@ const removeRefreshTokenFromUser = async (req, res, next) => {
       }
       
       const user = authData.user;
-      const hasRefreshToken = await db.userHasRefreshToken(user.id, refreshToken); 
-      if (!hasRefreshToken) {
+
+      const dbRefreshToken = await db.getRefreshTokenFromUserID(user.id);
+      if (!dbRefreshToken || (dbRefreshToken !== refreshToken)) {
         return res.status(403).json({ message: "Forbidden: Invalid token." });
       }
 
-      await db.deleteRefreshTokenFromUser(user.id, refreshToken);
-      res.status(204).json({ message: "Deleted refresh token." });
+      await db.deleteRefreshTokenFromUser(user.id);
+      res.clearCookie("refreshToken");
+      res.status(204).json({ message: "Deleted refresh token. Logged Out." });
     });
   } catch (err) {
     next(err);
@@ -90,7 +93,7 @@ const createNewUser = async (req, res, next) => {
       });
     }
 
-    const { firstNameExists, lastNameExists, usernameExists, emailExists } = await db.checkUserFieldsExistence(req.body.first_name, req.body.last_name, req.body.username, req.body.email);
+    const { firstNameExists, usernameExists, emailExists } = await db.checkUserFieldsExistence(req.body.first_name, req.body.username, req.body.email);
     if (firstNameExists) {
       return res.status(409).json({
         message: "First Name already exists."
@@ -134,12 +137,12 @@ const acquireAccessAndRefreshTokens = async (req, res, next) => {
     const user = await db.getUserFromUsername(username);
 
     if (!user) {
-      return res.status(400).json({ invalidUserName: true });
+      return res.status(400).json({ message: "Username does not exist." });
     }
 
     const passwordsMatched = await bcrypt.compare(password, user.password);
     if (!passwordsMatched) {
-      return res.status(400).json({ invalidUserPassword: true });
+      return res.status(400).json({ message: "Wrong password." });
     }
 
     const desiredUser = {
@@ -148,13 +151,24 @@ const acquireAccessAndRefreshTokens = async (req, res, next) => {
     };
 
     const accessToken  = createAccessToken(desiredUser);
-    const refreshToken = jwt.sign({ user: desiredUser }, process.env.REFRESH_TOKEN);
-    await db.insertRefreshTokenToUser(user.id, refreshToken);
-    res.json({
+    let refreshToken = await db.getRefreshTokenFromUserID(user.id);
+    if (!refreshToken) {
+      refreshToken = jwt.sign({ user: desiredUser }, process.env.REFRESH_TOKEN, { expiresIn: '30d' });
+      await db.insertRefreshTokenToUser(user.id, refreshToken);
+    } else {
+      await db.increaseTokenRefCount(user.id);
+    }
+
+    res.cookie("refreshToken", refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: "Strict",
+      maxAge: 30 * 24 * 60 * 60 * 1000,
+    }).json({
       message: "Sign In Successful.",
       accessToken: accessToken,
-      refreshToken: refreshToken,
     });
+
   } catch (err) {
     next(err);
   } 
