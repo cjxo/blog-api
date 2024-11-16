@@ -71,9 +71,27 @@ TODOs
         - [X] form data instead of useState of fields
   
 - [ ] An applicaton when user is signed-in (actual dashboard stuff)
-  - [ ] Remember that the sidebar contains the things mentioned above!
   - [ ] Complete Sidebar.
-    - [ ] Sidebar Icons. How can we colour them?
+    - [X] Sidebar Icons. How can we colour them?
+    - [X] QUick Profile For Debug Signout!
+    - [X] Do Posts. Fetch Them. Display them. Or create dummy posts. For Now.
+    - [X] React Props Types!
+    - [X] Post UI: https://shop.entheosweb.com/ui-elements-type/161382.html
+        - instead of grid, why not a single column and n rows? Display some sort of picture, little details, post title, and "read more" link...
+    - [X] How to edtend sidebar, content below the page?
+    
+    - [ ] Add likes, comments count per post!
+        - [ ] Display The COmments!
+          - [ ] Add likes/dislikes in comments!
+          - [ ] Likes/dislikes icons!
+        - [ ] Actual Add Comment Functionality
+        - [ ] Date is used multiple times. Pullout into a fucntion!
+        - [ ] Major cleanup before next feature!
+    - [ ] Design Add Posts! Make it nice!
+    - [ ] Tags Per Post
+    - [ ] Add Views per post
+    - [ ] Problem: When reloading, we redirect back to /home for some reason.
+
   - [ ] Ability To Update Bio (BACKEND)
 
-- [ ] After basic dashboard posts, go back to homepage and implement 'see user posts' thingy
+- [ ] After basic dashboard posts, go back to homepage and implement 'see user posts' thingyi

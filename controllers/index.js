@@ -17,6 +17,8 @@ const getAllPosts = async (req, res, next) => {
       message: "Request Granted.",
       posts 
     });
+
+    console.log(posts);
   } catch (err) {
     next(err);
   }
@@ -28,8 +30,6 @@ const createPost = async (req, res, next) => {
     const title      = req.body.title;
     const content    = req.body.content;
     const published  = req.body.published ? true : false;
-
-    console.log(req.body);
 
     if (!title || (title === "")) {
       return res.status(400).json({
