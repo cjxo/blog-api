@@ -8,5 +8,7 @@ indexRouter.get("/", index.welcome);
 indexRouter.get("/posts", index.getAllPosts);
 indexRouter.post("/posts", auth.verifyToken, index.createPost);
 indexRouter.get("/user/:id", index.getUserDetails);
+indexRouter.post("/posts/:id/comment", auth.verifyToken, index.postComment);
+indexRouter.get("/posts/:id/comments", auth.verifyToken, index.getAllComments);
 
 export default indexRouter;

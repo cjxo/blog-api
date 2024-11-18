@@ -66,9 +66,47 @@ const getUserDetails = async (req, res, next) => {
   }
 };
 
+const postComment = async (req, res, next) => {
+  const user = req.user;
+  const post_id = req.params.id;
+  const content = req.body.content;
+  try {
+    const comment_id = await db.addCommentToPost(post_id, user.id, content);
+    res.json({
+      message: "Request Granted",
+      commentDetail: {
+        id: comment_id,
+        username: user.username,
+        content: content,
+        likes: 0,
+        dislikes: 0,
+      }
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+const getAllComments = async (req, res, next) => {
+  const post_id = req.params.id;
+
+  console.log(post_id);
+  try {
+    const comments = await db.getAllComments(post_id);
+    res.json({
+      message: "Request Granted",
+      comments,
+    });
+  } catch (err) {
+    next(err);
+  }
+}
+
 export default {
   welcome,
   getAllPosts,
   createPost,
   getUserDetails,
+  postComment,
+  getAllComments,
 };

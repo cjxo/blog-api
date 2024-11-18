@@ -2,11 +2,12 @@ import pg from 'pg';
 import 'dotenv/config';
 
 const SQL = `
-  DROP TABLE IF EXISTS bf_comment;
-  DROP TABLE IF EXISTS bf_post;
-  DROP TABLE IF EXISTS bf_user_profile;
-  DROP TABLE IF EXISTS bf_per_user_refresh_token;
-  DROP TABLE IF EXISTS bf_user;
+ DROP TABLE IF EXISTS bf_comment_like;
+--  DROP TABLE IF EXISTS bf_comment;
+--  DROP TABLE IF EXISTS bf_post;
+--  DROP TABLE IF EXISTS bf_user_profile;
+--  DROP TABLE IF EXISTS bf_per_user_refresh_token;
+--  DROP TABLE IF EXISTS bf_user;
 
   CREATE TABLE IF NOT EXISTS bf_user (
     id          INTEGER        PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
@@ -45,8 +46,16 @@ const SQL = `
     id          INTEGER      PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
     post_id     INTEGER      REFERENCES bf_post(id) ON DELETE CASCADE,
     created_at  TIMESTAMPTZ  DEFAULT(TIMEZONE('utc', NOW())),
-    username    VARCHAR(64)  NOT NULL,
+    user_id     INTEGER      REFERENCES bf_user(id) ON DELETE CASCADE, 
     content     TEXT         NOT NULL
+  );
+
+  CREATE TABLE IF NOT EXISTS bf_comment_like (
+    id          INTEGER      PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+    comment_id  INTEGER      REFERENCES bf_comment(id) ON DELETE CASCADE,
+    user_id     INTEGER      REFERENCES bf_user(id) ON DELETE CASCADE,
+    like_value  INTEGER      NOT NULL CHECK (like_value IN(-1, 1)), -- if 1, then like, -1,
+    UNIQUE (comment_id, user_id)
   );
 `;
 

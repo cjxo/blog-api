@@ -142,6 +142,46 @@ const getUserDetails = async (userID) => {
   };
 };
 
+const addCommentToPost = async (post_id, user_id, content) => {
+  const SQL = `
+    INSERT INTO bf_comment (post_id, user_id, content)
+    VALUES ($1, $2, $3)
+    RETURNING id;
+  `;
+
+  const { rows } = await pool.query(SQL, [post_id, user_id, content]);
+
+  return rows[0].id;
+};
+
+const getAllComments = async (post_id) => {
+  // https://www.postgresql.org/docs/current/functions-conditional.html
+  // https://www.w3schools.com/sql/sql_join_left.asp
+  const SQL = `
+    SELECT 
+        c.id,
+        u.username,
+        c.content,
+        COALESCE(SUM(CASE WHEN cl.like_value = 1 THEN 1 ELSE 0 END), 0) AS likes,
+        COALESCE(SUM(CASE WHEN cl.like_value = -1 THEN 1 ELSE 0 END), 0) AS dislikes
+    FROM 
+        bf_comment AS c
+    JOIN 
+        bf_user AS u ON c.user_id = u.id
+    LEFT JOIN 
+        bf_comment_like AS cl ON c.id = cl.comment_id
+    WHERE 
+        c.post_id = $1
+    GROUP BY 
+        c.id, u.username
+    ORDER BY 
+        c.created_at DESC; 
+  `;
+
+  const { rows } = await pool.query(SQL, [post_id]);
+  return rows;
+};
+
 export default {
   checkUserFieldsExistence,
   createNewUserAndReturnID,
@@ -153,4 +193,6 @@ export default {
   createUserPost,
   getAllPublishedPosts,
   getUserDetails,
+  addCommentToPost,
+  getAllComments,
 };

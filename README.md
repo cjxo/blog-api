@@ -81,13 +81,18 @@ TODOs
     - [X] How to edtend sidebar, content below the page?
     
     - [ ] Add likes, comments count per post!
-        - [ ] Display The COmments!
-          - [ ] Add likes/dislikes in comments!
-          - [ ] Likes/dislikes icons!
-        - [ ] Actual Add Comment Functionality
+        - [X] Display The COmments!
+          - [X] Add likes/dislikes in comments!
+          - [X] Likes/dislikes icons!
+        - [X] Actual Add Comment Functionality
+          - [X] Implement Post COmment on Server. (return comment_id, username, content, likes/dislikes count)
+          - [X] Reset Form Data on Success
+          - [X] Update Comment Renderables on Success.
+        - [ ] Actual Like/Dislike Comment Functionality
         - [ ] Date is used multiple times. Pullout into a fucntion!
         - [ ] Major cleanup before next feature!
     - [ ] Design Add Posts! Make it nice!
+    - [ ] Hearts per posts!
     - [ ] Tags Per Post
     - [ ] Add Views per post
     - [ ] Problem: When reloading, we redirect back to /home for some reason.
