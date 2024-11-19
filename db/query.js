@@ -154,32 +154,97 @@ const addCommentToPost = async (post_id, user_id, content) => {
   return rows[0].id;
 };
 
-const getAllComments = async (post_id) => {
+const getAllComments = async (post_id, user_id) => {
   // https://www.postgresql.org/docs/current/functions-conditional.html
   // https://www.w3schools.com/sql/sql_join_left.asp
+  // SURELY WE CAN SIMPLIFY THIS! SQL PROS, PLEASE DONT LAUGH AT ME! I JUST STARTED LOL
   const SQL = `
     SELECT 
-        c.id,
-        u.username,
-        c.content,
-        COALESCE(SUM(CASE WHEN cl.like_value = 1 THEN 1 ELSE 0 END), 0) AS likes,
-        COALESCE(SUM(CASE WHEN cl.like_value = -1 THEN 1 ELSE 0 END), 0) AS dislikes
+      c.id,
+      u.username,
+      c.content,
+      (
+        COALESCE((
+          SELECT
+            SUM(CASE WHEN like_value = 1 THEN 1 ELSE 0 END)::INTEGER
+          FROM bf_comment_like WHERE comment_id = c.id
+          ), 0)
+      ) AS likes,
+      (
+        COALESCE((
+          SELECT
+            SUM(CASE WHEN like_value = -1 THEN 1 ELSE 0 END)::INTEGER
+          FROM bf_comment_like WHERE comment_id = c.id
+          ), 0)
+      ) AS dislikes,
+      (
+        COALESCE((
+        SELECT 
+          CASE
+            WHEN like_value = 1 THEN 'liked'
+            WHEN like_value = -1 THEN 'disliked'
+            ELSE 'none'
+          END
+        FROM bf_comment_like as cl
+        WHERE cl.comment_id = c.id AND cl.user_id = $2
+        ), 'none')
+      ) AS user_reaction 
     FROM 
-        bf_comment AS c
+      bf_comment AS c
     JOIN 
-        bf_user AS u ON c.user_id = u.id
-    LEFT JOIN 
-        bf_comment_like AS cl ON c.id = cl.comment_id
+      bf_user AS u ON c.user_id = u.id
     WHERE 
-        c.post_id = $1
+      c.post_id = $1
     GROUP BY 
-        c.id, u.username
+      c.id, u.username
     ORDER BY 
-        c.created_at DESC; 
+      c.created_at DESC;
   `;
 
-  const { rows } = await pool.query(SQL, [post_id]);
+  const { rows } = await pool.query(SQL, [post_id, user_id]);
   return rows;
+};
+
+const toggleLikeDislike = async (comment_id, user_id, type) => {
+  const SELECTSQL = `
+    SELECT * FROM bf_comment_like
+    WHERE (comment_id = $1) AND (user_id = $2);
+  `;
+
+  const selectResult = await pool.query(SELECTSQL, [comment_id, user_id]);
+  if (selectResult.rows.length) {
+    const UPDATESQL = `
+      UPDATE bf_comment_like
+      SET like_value = $3
+      WHERE comment_id = $1 AND user_id = $2;
+    `;
+
+    let prevLikeValue = selectResult.rows[0].like_value;
+    let likeValue = 0;
+    if (type === "like") {
+      likeValue = ((prevLikeValue === -1) || (prevLikeValue === 0)) ? 1 : 0;
+    } else if (type === "dislike") {
+      likeValue = ((prevLikeValue === 1) || (prevLikeValue === 0)) ? -1 : 0;
+    }
+    
+    await pool.query(UPDATESQL, [comment_id, user_id, likeValue]);
+
+    if (likeValue === 1) {
+      return "liked";
+    } else if (likeValue === -1) {
+      return "disliked";
+    } else {
+      return "none";
+    }
+  } else {
+    const INSERTSQL = `
+      INSERT INTO bf_comment_like (comment_id, user_id, like_value)
+      VALUES ($1, $2, $3);
+    `;
+    await pool.query(INSERTSQL, [comment_id, user_id, type === "liked" ? 1 : ((type === "disliked") ? -1 : 0)]);
+
+    return type + "d";
+  }
 };
 
 export default {
@@ -195,4 +260,5 @@ export default {
   getUserDetails,
   addCommentToPost,
   getAllComments,
+  toggleLikeDislike,
 };

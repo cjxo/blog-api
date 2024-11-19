@@ -89,6 +89,8 @@ TODOs
           - [X] Reset Form Data on Success
           - [X] Update Comment Renderables on Success.
         - [ ] Actual Like/Dislike Comment Functionality
+          - [X] Determine if current user liked the comment or not!
+          - [ ] Liek/Dislike toggling!
         - [ ] Date is used multiple times. Pullout into a fucntion!
         - [ ] Major cleanup before next feature!
     - [ ] Design Add Posts! Make it nice!
@@ -96,7 +98,11 @@ TODOs
     - [ ] Tags Per Post
     - [ ] Add Views per post
     - [ ] Problem: When reloading, we redirect back to /home for some reason.
+    - [ ] Designing posts! (bold, italics, pictures, etc!)
 
   - [ ] Ability To Update Bio (BACKEND)
 
 - [ ] After basic dashboard posts, go back to homepage and implement 'see user posts' thingyi
+
+- [ ] Optimizations
+  - [ ] Dont get entire comments immediately... Load them instead as user scroll.

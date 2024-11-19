@@ -80,6 +80,7 @@ const postComment = async (req, res, next) => {
         content: content,
         likes: 0,
         dislikes: 0,
+        user_reaction: 'none',
       }
     });
   } catch (err) {
@@ -90,9 +91,9 @@ const postComment = async (req, res, next) => {
 const getAllComments = async (req, res, next) => {
   const post_id = req.params.id;
 
-  console.log(post_id);
+  const user_id = req.user.id || 0;
   try {
-    const comments = await db.getAllComments(post_id);
+    const comments = await db.getAllComments(post_id, user_id);
     res.json({
       message: "Request Granted",
       comments,
@@ -102,6 +103,23 @@ const getAllComments = async (req, res, next) => {
   }
 }
 
+const toggleLikeDislike = async (req, res, next) => {
+  //const post_id = req.params.postId;
+  const comment_id = req.params.commentId;
+  const user_id = req.user.id || 0;
+  const type = req.body.type || "none";
+  try {
+    console.log(comment_id);
+    const newValue = await db.toggleLikeDislike(comment_id, user_id, type);
+    res.json({
+      message: "Request Granted",
+      newValue,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
 export default {
   welcome,
   getAllPosts,
@@ -109,4 +127,5 @@ export default {
   getUserDetails,
   postComment,
   getAllComments,
+  toggleLikeDislike,
 };

@@ -54,7 +54,7 @@ const SQL = `
     id          INTEGER      PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
     comment_id  INTEGER      REFERENCES bf_comment(id) ON DELETE CASCADE,
     user_id     INTEGER      REFERENCES bf_user(id) ON DELETE CASCADE,
-    like_value  INTEGER      NOT NULL CHECK (like_value IN(-1, 1)), -- if 1, then like, -1,
+    like_value  INTEGER      NOT NULL CHECK (like_value IN(-1, 0, 1)), -- if 1, then like, -1,
     UNIQUE (comment_id, user_id)
   );
 `;
