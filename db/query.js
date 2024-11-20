@@ -25,7 +25,7 @@ const createNewUserAndReturnID = async (firstName, lastName, username, email, pa
     INSERT INTO bf_user (first_name, last_name, username, email, password)
     VALUES ($1, $2, $3, $4, $5)
     RETURNING id;
-  `;
+`;
 
   const { rows } = await pool.query(SQL, [firstName, lastName, username, email, saltAndHash]);
   return rows[0].id;
@@ -101,15 +101,51 @@ const createUserPost = async (userID, title, content, published) => {
 
 const getAllPublishedPosts = async () => {
   const SQL = `
-    SELECT bf_post.id, username as author, author_id, created_at, updated_at, title, content
+    SELECT
+      bf_post.id,
+      username as author,
+      author_id,
+      created_at,
+      updated_at,
+      title,
+      (
+        SELECT
+          (COUNT (*))::INTEGER
+        FROM bf_post_heart
+        WHERE bf_post.id = bf_post_heart.post_id
+      ) AS hearts,
+      content
     FROM bf_post
-    INNER JOIN bf_user
-    ON bf_user.id = bf_post.author_id
+    INNER JOIN
+      bf_user
+      ON bf_user.id = bf_post.author_id
     WHERE published = TRUE;
   `;
 
   const { rows } = await pool.query(SQL);
   return rows;
+};
+
+const getUserHasHeartPost = async (post_id, user_id) => {
+  const USERHEARTSQL = `
+    SELECT
+      (CASE WHEN COUNT (*) = 1 THEN TRUE ELSE FALSE END)::BOOL as user_reaction
+    FROM bf_post_heart
+    WHERE (bf_post_heart.post_id = $1) AND (bf_post_heart.user_id = $2);
+  `;
+
+  const TOTALHEARTSSQL = `
+    SELECT COUNT(*)::INTEGER AS hearts
+      FROM bf_post_heart
+    WHERE $1 = bf_post_heart.post_id;
+  `;
+
+  const userResult = await pool.query(USERHEARTSQL, [post_id, user_id]);
+  const heartsResult = await pool.query(TOTALHEARTSSQL, [post_id]);
+  return {
+    hearted: userResult.rows[0].user_reaction,
+    heartCount: heartsResult.rows[0].hearts,
+  }
 };
 
 const getUserPublishedPosts = async (userID) => {
@@ -241,9 +277,36 @@ const toggleLikeDislike = async (comment_id, user_id, type) => {
       INSERT INTO bf_comment_like (comment_id, user_id, like_value)
       VALUES ($1, $2, $3);
     `;
-    await pool.query(INSERTSQL, [comment_id, user_id, type === "liked" ? 1 : ((type === "disliked") ? -1 : 0)]);
+    await pool.query(INSERTSQL, [comment_id, user_id, type === "like" ? 1 : ((type === "dislike") ? -1 : 0)]);
 
     return type + "d";
+  }
+};
+
+const toggleHeart = async (post_id, user_id) => {
+  // TODO: in the toggleLikeDislike, we should also delete when the like value is 0!
+  const SELECTSQL = `
+    SELECT * FROM bf_post_heart
+    WHERE (post_id = $1) AND (user_id = $2);
+  `;
+
+  const selectResult = await pool.query(SELECTSQL, [post_id, user_id]);
+  if (selectResult.rows.length) {
+    const DELETESQL = `
+      DELETE FROM bf_post_heart
+      WHERE (post_id = $1) AND (user_id = $2);
+    `;
+
+    await pool.query(DELETESQL, [post_id, user_id]);
+    return "none";
+  } else {
+    const INSERTSQL = `
+      INSERT INTO bf_post_heart (user_id, post_id)
+      VALUES ($1, $2);
+    `;
+    await pool.query(INSERTSQL, [user_id, post_id]);
+
+    return "heart";
   }
 };
 
@@ -261,4 +324,6 @@ export default {
   addCommentToPost,
   getAllComments,
   toggleLikeDislike,
+  toggleHeart,
+  getUserHasHeartPost,
 };

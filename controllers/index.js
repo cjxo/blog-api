@@ -14,11 +14,25 @@ const getAllPosts = async (req, res, next) => {
   try {
     const posts = await db.getAllPublishedPosts();
     res.json({
-      message: "Request Granted.",
+      message: "Request Granted",
       posts 
     });
 
     console.log(posts);
+  } catch (err) {
+    next(err);
+  }
+};
+
+const getUserHasHeartPost = async (req, res, next) => {
+  const post_id = req.params.postId;
+  const user_id = req.user.id || 0;
+  try {
+    const result = await db.getUserHasHeartPost(post_id, user_id);
+    res.json({
+      message: "Request Granted",
+      result,
+    });
   } catch (err) {
     next(err);
   }
@@ -120,6 +134,21 @@ const toggleLikeDislike = async (req, res, next) => {
   }
 };
 
+const toggleHeart = async (req, res, next) => {
+  const post_id = req.params.postId;
+  const user_id = req.user.id || 0;
+
+  try {
+    const newValue = await db.toggleHeart(post_id, user_id);
+    res.json({
+      message: "Request Granted",
+      newValue,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
 export default {
   welcome,
   getAllPosts,
@@ -128,4 +157,6 @@ export default {
   postComment,
   getAllComments,
   toggleLikeDislike,
+  toggleHeart,
+  getUserHasHeartPost,
 };

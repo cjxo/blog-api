@@ -2,7 +2,8 @@ import pg from 'pg';
 import 'dotenv/config';
 
 const SQL = `
- DROP TABLE IF EXISTS bf_comment_like;
+DROP TABLE IF EXISTS bf_post_heart;
+--  DROP TABLE IF EXISTS bf_comment_like;
 --  DROP TABLE IF EXISTS bf_comment;
 --  DROP TABLE IF EXISTS bf_post;
 --  DROP TABLE IF EXISTS bf_user_profile;
@@ -56,6 +57,13 @@ const SQL = `
     user_id     INTEGER      REFERENCES bf_user(id) ON DELETE CASCADE,
     like_value  INTEGER      NOT NULL CHECK (like_value IN(-1, 0, 1)), -- if 1, then like, -1,
     UNIQUE (comment_id, user_id)
+  );
+
+  CREATE TABLE IF NOT EXISTS bf_post_heart (
+    id          INTEGER      PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+    user_id     INTEGER      REFERENCES bf_user(id),
+    post_id     INTEGER      REFERENCES bf_post(id) ON DELETE CASCADE, 
+    UNIQUE(user_id, post_id)
   );
 `;
 

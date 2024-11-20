@@ -11,5 +11,7 @@ indexRouter.get("/user/:id", index.getUserDetails);
 indexRouter.post("/posts/:id/comment", auth.verifyToken, index.postComment);
 indexRouter.get("/posts/:id/comments", auth.verifyToken, index.getAllComments);
 indexRouter.post("/posts/:postId/comment/:commentId/like", auth.verifyToken, index.toggleLikeDislike);
+indexRouter.post("/posts/:postId/heart", auth.verifyToken, index.toggleHeart);
+indexRouter.get("/posts/:postId/heart", auth.verifyToken, index.getUserHasHeartPost);
 
 export default indexRouter;

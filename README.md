@@ -51,7 +51,7 @@ TODOs
     - [X] Working Sign Up Page! Remember CORS?
 
     - [X] Working Sign In Page! 
-      - Ok, so I should somehow know how to do authentication using react-router-dom... I also need to rearrange my routes like different appearance for users who arent signed in, etc.
+w      - Ok, so I should somehow know how to do authentication using react-router-dom... I also need to rearrange my routes like different appearance for users who arent signed in, etc.
       - There is also something called refresh token, and I need to make that thing secure as possible. Internet says something about httpOnly, and some crazy terms that IDK about.
       - What about having sing-up, sign-in, and homepage have their own pages instead of separating them?
       - [X] How can we make JWT Tokens persist?
@@ -80,7 +80,7 @@ TODOs
         - instead of grid, why not a single column and n rows? Display some sort of picture, little details, post title, and "read more" link...
     - [X] How to edtend sidebar, content below the page?
     
-    - [ ] Add likes, comments count per post!
+    - [X] Add likes, comments count per post!
         - [X] Display The COmments!
           - [X] Add likes/dislikes in comments!
           - [X] Likes/dislikes icons!
@@ -88,19 +88,31 @@ TODOs
           - [X] Implement Post COmment on Server. (return comment_id, username, content, likes/dislikes count)
           - [X] Reset Form Data on Success
           - [X] Update Comment Renderables on Success.
-        - [ ] Actual Like/Dislike Comment Functionality
+        - [X] Actual Like/Dislike Comment Functionality
           - [X] Determine if current user liked the comment or not!
-          - [ ] Liek/Dislike toggling!
-        - [ ] Date is used multiple times. Pullout into a fucntion!
-        - [ ] Major cleanup before next feature!
-    - [ ] Design Add Posts! Make it nice!
-    - [ ] Hearts per posts!
+          - [X] Liek/Dislike toggling!
+        - [X] Date is used multiple times. Pullout into a fucntion!
+        - [X] Major cleanup before next feature!
+          - [X] Separate Post into multiple parts to make clean code people happy
+            - React Proptypes in that thing
+    - [X] Design Add Posts! Make it nice!
+    - [X] Hearts per posts!
     - [ ] Tags Per Post
+      - [ ] Ability TO add TAGS!... 
+      - [ ] Ability To Color tags (IDK)?
     - [ ] Add Views per post
     - [ ] Problem: When reloading, we redirect back to /home for some reason.
-    - [ ] Designing posts! (bold, italics, pictures, etc!)
+  - [ ] Designing posts! (bold, italics, pictures, etc!)
 
+- [ ] Profile Design
   - [ ] Ability To Update Bio (BACKEND)
+  - [ ] Display User Posts
+
+- [ ] Notification Design
+  - [ ] Liked/Dislike comment noti
+  - [ ] Comment on post noti
+
+- [ ] Remove Inbox.
 
 - [ ] After basic dashboard posts, go back to homepage and implement 'see user posts' thingyi
 
