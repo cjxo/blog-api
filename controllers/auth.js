@@ -50,7 +50,7 @@ const acquireNewAccessTokenFromRefreshToken = async (req, res, next) => {
       }
 
       const accessToken = createAccessToken(desiredUser);
-      res.json({ accessToken });
+      res.json({ accessToken, userId: user.id, username: user.username });
     });
   } catch (err) {
     return next(err);

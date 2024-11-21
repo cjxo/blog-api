@@ -12,7 +12,7 @@ const welcome = (req, res) => {
 
 const getAllPosts = async (req, res, next) => {
   try {
-    const posts = await db.getAllPublishedPosts();
+    const posts = await db.getAllPublishedPosts(null);
     res.json({
       message: "Request Granted",
       posts 
@@ -24,18 +24,26 @@ const getAllPosts = async (req, res, next) => {
   }
 };
 
-const getUserHasHeartPost = async (req, res, next) => {
-  const post_id = req.params.postId;
-  const user_id = req.user.id || 0;
+const getUserPosts = async (req, res, next) => {
+  let user_id = 0;
+  if (req.params.id) {
+    user_id = parseInt(req.params.id);
+  } else {
+    user_id = 0;
+  }
+
   try {
-    const result = await db.getUserHasHeartPost(post_id, user_id);
+    const posts = await db.getAllPublishedPosts(user_id);
     res.json({
       message: "Request Granted",
-      result,
+      posts 
     });
+
+    console.log(user_id, posts);
   } catch (err) {
     next(err);
   }
+
 };
 
 const createPost = async (req, res, next) => {
@@ -149,14 +157,28 @@ const toggleHeart = async (req, res, next) => {
   }
 };
 
+const getPostStatistics = async (req, res, next) => {
+  const post_id = req.params.postId;
+  const user_id = req.user.id || 0;
+  try {
+    const result = await db.getPostStatistics(post_id, user_id);
+    res.json({
+      message: "Request Granted",
+      ...result,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
 export default {
   welcome,
   getAllPosts,
   createPost,
   getUserDetails,
+  getUserPosts,
   postComment,
   getAllComments,
   toggleLikeDislike,
   toggleHeart,
-  getUserHasHeartPost,
+  getPostStatistics,
 };

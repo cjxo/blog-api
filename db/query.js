@@ -99,7 +99,7 @@ const createUserPost = async (userID, title, content, published) => {
   await pool.query(SQL, [userID, title, content, published]);
 };
 
-const getAllPublishedPosts = async () => {
+const getAllPublishedPosts = async (user_id) => {
   const SQL = `
     SELECT
       bf_post.id,
@@ -122,29 +122,34 @@ const getAllPublishedPosts = async () => {
     WHERE published = TRUE;
   `;
 
-  const { rows } = await pool.query(SQL);
-  return rows;
-};
-
-const getUserHasHeartPost = async (post_id, user_id) => {
-  const USERHEARTSQL = `
+  const UserIDSQL = `
     SELECT
-      (CASE WHEN COUNT (*) = 1 THEN TRUE ELSE FALSE END)::BOOL as user_reaction
-    FROM bf_post_heart
-    WHERE (bf_post_heart.post_id = $1) AND (bf_post_heart.user_id = $2);
+      bf_post.id,
+      username as author,
+      author_id,
+      created_at,
+      updated_at,
+      title,
+      (
+        SELECT
+          (COUNT (*))::INTEGER
+        FROM bf_post_heart
+        WHERE bf_post.id = bf_post_heart.post_id
+      ) AS hearts,
+      content
+    FROM bf_post
+    INNER JOIN
+      bf_user
+      ON bf_user.id = bf_post.author_id
+    WHERE (published = TRUE) AND (author_id = $1);
   `;
 
-  const TOTALHEARTSSQL = `
-    SELECT COUNT(*)::INTEGER AS hearts
-      FROM bf_post_heart
-    WHERE $1 = bf_post_heart.post_id;
-  `;
-
-  const userResult = await pool.query(USERHEARTSQL, [post_id, user_id]);
-  const heartsResult = await pool.query(TOTALHEARTSSQL, [post_id]);
-  return {
-    hearted: userResult.rows[0].user_reaction,
-    heartCount: heartsResult.rows[0].hearts,
+  if (user_id) {
+    const { rows } = await pool.query(UserIDSQL, [user_id]);
+    return rows;
+  } else {
+    const { rows } = await pool.query(SQL);
+    return rows;
   }
 };
 
@@ -310,6 +315,36 @@ const toggleHeart = async (post_id, user_id) => {
   }
 };
 
+const getPostStatistics = async (post_id, user_id) => {
+  const USERHEARTSQL = `
+    SELECT
+      (CASE WHEN COUNT (*) = 1 THEN TRUE ELSE FALSE END)::BOOL as user_reaction
+    FROM bf_post_heart
+    WHERE (bf_post_heart.post_id = $1) AND (bf_post_heart.user_id = $2);
+  `;
+
+  const TOTALHEARTSSQL = `
+    SELECT COUNT(*)::INTEGER AS hearts
+      FROM bf_post_heart
+    WHERE $1 = bf_post_heart.post_id;
+  `;
+
+  const TOTALVIEWSSQL = `
+    SELECT COUNT(*)::INTEGER AS view_count
+      FROM bf_post_view
+    WHERE (bf_post_view.post_id = $1);
+  `;
+
+  const userResult = await pool.query(USERHEARTSQL, [post_id, user_id]);
+  const heartsResult = await pool.query(TOTALHEARTSSQL, [post_id]);
+  const viewResult = await pool.query(TOTALVIEWSSQL, [post_id]);
+  return {
+    heartedByUser: userResult.rows[0].user_reaction,
+    heartCount: heartsResult.rows[0].hearts,
+    viewCount: viewResult.rows[0].view_count,
+  }
+};
+
 export default {
   checkUserFieldsExistence,
   createNewUserAndReturnID,
@@ -325,5 +360,5 @@ export default {
   getAllComments,
   toggleLikeDislike,
   toggleHeart,
-  getUserHasHeartPost,
+  getPostStatistics,
 };

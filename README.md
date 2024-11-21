@@ -97,12 +97,7 @@ w      - Ok, so I should somehow know how to do authentication using react-route
             - React Proptypes in that thing
     - [X] Design Add Posts! Make it nice!
     - [X] Hearts per posts!
-    - [ ] Tags Per Post
-      - [ ] Ability TO add TAGS!... 
-      - [ ] Ability To Color tags (IDK)?
-    - [ ] Add Views per post
-    - [ ] Problem: When reloading, we redirect back to /home for some reason.
-  - [ ] Designing posts! (bold, italics, pictures, etc!)
+    - [X] Problem: When reloading, we redirect back to /home for some reason.
 
 - [ ] Profile Design
   - [ ] Ability To Update Bio (BACKEND)
@@ -111,6 +106,11 @@ w      - Ok, so I should somehow know how to do authentication using react-route
 - [ ] Notification Design
   - [ ] Liked/Dislike comment noti
   - [ ] Comment on post noti
+
+- [ ] Designing posts! (bold, italics, pictures, etc!)
+
+- [ ] Tags Per Post
+- [ ] Add Views per post
 
 - [ ] Remove Inbox.
 
