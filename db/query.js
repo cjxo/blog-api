@@ -73,7 +73,7 @@ const getRefreshTokenFromUserID = async (userID) => {
   }
 };
 
-const deleteRefreshTokenFromUser = async (userID) => {
+const deleteRefreshTokenFromUser = async (userID, removeRefs) => {
   const SQL = `
     UPDATE bf_per_user_refresh_token
     SET ref_cnt = GREATEST(ref_cnt - 1, 0)
@@ -84,10 +84,10 @@ const deleteRefreshTokenFromUser = async (userID) => {
 
   const DELETESQL = `
     DELETE FROM bf_per_user_refresh_token
-    WHERE ref_cnt <= 0;
+    WHERE (ref_cnt <= 0) OR (($1 = TRUE) AND (user_id = $2));
   `;
   
-  await pool.query(DELETESQL);
+  await pool.query(DELETESQL, [removeRefs, userID]);
 };
 
 const createUserPost = async (userID, title, content, published) => {
@@ -99,7 +99,7 @@ const createUserPost = async (userID, title, content, published) => {
   await pool.query(SQL, [userID, title, content, published]);
 };
 
-const getAllPublishedPosts = async (user_id) => {
+const getAllPublishedPosts = async (user_id, filterBy) => {
   const SQL = `
     SELECT
       bf_post.id,
@@ -119,7 +119,8 @@ const getAllPublishedPosts = async (user_id) => {
     INNER JOIN
       bf_user
       ON bf_user.id = bf_post.author_id
-    WHERE published = TRUE;
+    WHERE published = TRUE
+    ORDER BY bf_post.id DESC;
   `;
 
   const UserIDSQL = `
@@ -141,11 +142,27 @@ const getAllPublishedPosts = async (user_id) => {
     INNER JOIN
       bf_user
       ON bf_user.id = bf_post.author_id
-    WHERE (published = TRUE) AND (author_id = $1);
+    WHERE
+      (published = TRUE) AND
+      ((author_id = $1) OR ($2 = 'hearts'))   AND
+      (
+        CASE
+          WHEN $2 = 'all-posts' THEN TRUE
+          WHEN $2 = 'hearts' THEN EXISTS (
+            SELECT 1
+              FROM bf_post_heart
+            WHERE 
+              (bf_post_heart.user_id = $1) AND
+              (bf_post_heart.post_id = bf_post.id)
+          )
+          ELSE TRUE
+        END
+      )
+    ORDER BY bf_post.id DESC;
   `;
 
   if (user_id) {
-    const { rows } = await pool.query(UserIDSQL, [user_id]);
+    const { rows } = await pool.query(UserIDSQL, [user_id, filterBy]);
     return rows;
   } else {
     const { rows } = await pool.query(SQL);
@@ -345,6 +362,16 @@ const getPostStatistics = async (post_id, user_id) => {
   }
 };
 
+const updateUserDetail = async (user_id, newUsername) => {
+  const SQL = `
+    UPDATE bf_user
+    SET username = $1
+    WHERE id = $2;
+  `;
+
+  await pool.query(SQL, [newUsername, user_id]);
+};
+
 export default {
   checkUserFieldsExistence,
   createNewUserAndReturnID,
@@ -361,4 +388,5 @@ export default {
   toggleLikeDislike,
   toggleHeart,
   getPostStatistics,
+  updateUserDetail,
 };

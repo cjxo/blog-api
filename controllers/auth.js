@@ -76,7 +76,7 @@ const removeRefreshTokenFromUser = async (req, res, next) => {
         return res.status(403).json({ message: "Forbidden: Invalid token." });
       }
 
-      await db.deleteRefreshTokenFromUser(user.id);
+      await db.deleteRefreshTokenFromUser(user.id, false);
       res.clearCookie("refreshToken");
       res.status(204).json({ message: "Deleted refresh token. Logged Out." });
     });
@@ -174,10 +174,44 @@ const acquireAccessAndRefreshTokens = async (req, res, next) => {
   } 
 };
 
+const editUserDetail = async (req, res, next) => {
+  try {
+    console.log("HEYA")
+    const exists = await db.checkUserFieldsExistence("dummy", req.body.newUsername, "dummy");
+    if (exists.usernameExists) {
+      res.status(409).json({
+        message: "Username Already Exists",
+      });
+    } else {
+      await db.updateUserDetail(parseInt(req.user.id), req.body.newUsername);
+      await db.deleteRefreshTokenFromUser(parseInt(req.user.id), true);
+
+      const desiredUser = {
+        id: req.user.id,
+        username: req.body.newUsername,
+      };
+
+      const refreshToken = jwt.sign({ user: desiredUser }, process.env.REFRESH_TOKEN, { expiresIn: '30d' });
+      await db.insertRefreshTokenToUser(parseInt(req.user.id), refreshToken);
+      res.cookie("refreshToken", refreshToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: "Strict",
+        maxAge: 30 * 24 * 60 * 60 * 1000,
+      }).json({
+        message: "Request Ganted",
+      });
+    }
+  } catch (err) {
+    next(err);
+  }
+};
+
 export default {
   verifyToken,
   acquireNewAccessTokenFromRefreshToken,
   removeRefreshTokenFromUser,
   createNewUser,
   acquireAccessAndRefreshTokens,
+  editUserDetail,
 };

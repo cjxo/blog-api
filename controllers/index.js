@@ -12,7 +12,7 @@ const welcome = (req, res) => {
 
 const getAllPosts = async (req, res, next) => {
   try {
-    const posts = await db.getAllPublishedPosts(null);
+    const posts = await db.getAllPublishedPosts(null, "all-posts");
     res.json({
       message: "Request Granted",
       posts 
@@ -33,7 +33,8 @@ const getUserPosts = async (req, res, next) => {
   }
 
   try {
-    const posts = await db.getAllPublishedPosts(user_id);
+    console.log(req.query);
+    const posts = await db.getAllPublishedPosts(user_id, req.query.filterBy);
     res.json({
       message: "Request Granted",
       posts 
@@ -43,7 +44,6 @@ const getUserPosts = async (req, res, next) => {
   } catch (err) {
     next(err);
   }
-
 };
 
 const createPost = async (req, res, next) => {

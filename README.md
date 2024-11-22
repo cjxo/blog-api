@@ -51,7 +51,7 @@ TODOs
     - [X] Working Sign Up Page! Remember CORS?
 
     - [X] Working Sign In Page! 
-w      - Ok, so I should somehow know how to do authentication using react-router-dom... I also need to rearrange my routes like different appearance for users who arent signed in, etc.
+      - Ok, so I should somehow know how to do authentication using react-router-dom... I also need to rearrange my routes like different appearance for users who arent signed in, etc.
       - There is also something called refresh token, and I need to make that thing secure as possible. Internet says something about httpOnly, and some crazy terms that IDK about.
       - What about having sing-up, sign-in, and homepage have their own pages instead of separating them?
       - [X] How can we make JWT Tokens persist?
@@ -70,8 +70,8 @@ w      - Ok, so I should somehow know how to do authentication using react-route
         - [X] fix signup and signin redirection when authed.
         - [X] form data instead of useState of fields
   
-- [ ] An applicaton when user is signed-in (actual dashboard stuff)
-  - [ ] Complete Sidebar.
+- [X] An applicaton when user is signed-in (actual dashboard stuff)
+  - [X] Complete Sidebar.
     - [X] Sidebar Icons. How can we colour them?
     - [X] QUick Profile For Debug Signout!
     - [X] Do Posts. Fetch Them. Display them. Or create dummy posts. For Now.
@@ -99,22 +99,24 @@ w      - Ok, so I should somehow know how to do authentication using react-route
     - [X] Hearts per posts!
     - [X] Problem: When reloading, we redirect back to /home for some reason.
 
-- [ ] Profile Design
-  - [ ] Ability To Update Bio (BACKEND)
-  - [ ] Display User Posts
+- [x] Basic Profile Design
+  - [X] Display User Posts
+  - [X] Display Hearted Posts
 
-- [ ] Notification Design
-  - [ ] Liked/Dislike comment noti
-  - [ ] Comment on post noti
-
+- [ ] Ability To Update Bio/username
 - [ ] Designing posts! (bold, italics, pictures, etc!)
+
+- [ ] BAD BUG: WHEN THE BROWSER BOOT UP THE FIRST TIME AND THE USER SIGNED IN FOR THE FIRST TIME, WHEN GOING TO PROFILE PAGE,
+STUFF DONT LOAD PROPERLY FOR SOME REASON AND THE USER MUST RELOAD THE PAGE FOR IT TO WORK THEREAFTER!
 
 - [ ] Tags Per Post
 - [ ] Add Views per post
 
-- [ ] Remove Inbox.
-
 - [ ] After basic dashboard posts, go back to homepage and implement 'see user posts' thingyi
+
+- [ ] Notification Design
+  - [ ] Liked/Dislike comment noti
+  - [ ] Comment on post noti
 
 - [ ] Optimizations
   - [ ] Dont get entire comments immediately... Load them instead as user scroll.
