@@ -389,6 +389,15 @@ const updateUserDetail = async (user_id, newUsername) => {
   await pool.query(SQL, [newUsername, user_id]);
 };
 
+const deletePost = async (post_id, user_id) => {
+  const POSTSQL = `
+    DELETE FROM bf_post
+    WHERE (id = $1) AND (author_id = $2);
+  `;
+
+  await pool.query(POSTSQL, [post_id, user_id]);
+};
+
 export default {
   checkUserFieldsExistence,
   createNewUserAndReturnID,
@@ -406,4 +415,5 @@ export default {
   setPostStatistics,
   getPostStatistics,
   updateUserDetail,
+  deletePost,
 };

@@ -14,5 +14,6 @@ indexRouter.get("/posts/:id/comments", auth.verifyToken, index.getAllComments);
 indexRouter.post("/posts/:postId/comment/:commentId/like", auth.verifyToken, index.toggleLikeDislike);
 indexRouter.get("/posts/:postId/statistics", auth.verifyToken, index.getPostStatistics);
 indexRouter.put("/posts/:postId/statistics", auth.verifyToken, index.setPostStatistics);
+indexRouter.delete("/posts/:postId/", auth.verifyToken, index.deletePost);
 
 export default indexRouter;

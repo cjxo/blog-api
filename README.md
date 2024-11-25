@@ -111,9 +111,11 @@ TODOs
 - [ ] BAD BUG: WHEN THE BROWSER BOOT UP THE FIRST TIME AND THE USER SIGNED IN FOR THE FIRST TIME, WHEN GOING TO PROFILE PAGE,
 STUFF DONT LOAD PROPERLY FOR SOME REASON AND THE USER MUST RELOAD THE PAGE FOR IT TO WORK THEREAFTER!
 
-- [ ] Add Views per post
-- [ ] Delete Post
+- [X] Add Views per post
+- [X] Delete Post
 - [ ] Tags Per Post
+
+- [ ] One more test of jWT
 
 - [ ] Notification Design
   - [ ] Liked/Dislike comment noti
@@ -121,3 +123,5 @@ STUFF DONT LOAD PROPERLY FOR SOME REASON AND THE USER MUST RELOAD THE PAGE FOR I
 
 - [ ] Optimizations
   - [ ] Dont get entire comments immediately... Load them instead as user scroll.
+
+- [ ] Delete Comment

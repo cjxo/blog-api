@@ -162,8 +162,18 @@ const setPostStatistics = async (req, res, next) => {
   const statistics = req.body;
   try {
     const result = await db.setPostStatistics(post_id, user_id, statistics);
-    console.log(result);
     res.json({ message: "Request Granted", setData: result });
+  } catch (err) {
+    next(err);
+  }
+};
+
+const deletePost = async (req, res, next) => {
+  const post_id = req.params.postId;
+  const user_id = req.user.id || 0;
+  try {
+    const result = await db.deletePost(post_id, user_id);
+    res.json({ message: "Request Granted" });
   } catch (err) {
     next(err);
   }
@@ -180,4 +190,5 @@ export default {
   toggleLikeDislike,
   getPostStatistics,
   setPostStatistics,
+  deletePost,
 };
