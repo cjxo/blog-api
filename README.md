@@ -103,16 +103,17 @@ TODOs
   - [X] Display User Posts
   - [X] Display Hearted Posts
 
-- [ ] Ability To Update Bio/username
-- [ ] Designing posts! (bold, italics, pictures, etc!)
+- [X] Ability To Update Bio/username
+- [ ] Designing posts! (bold, italics, etc!)
+    - https://github.com/tinymce/tinymce?tab=readme-ov-file
+    - Ok, I changed my mind. I have to get stupid API keys just to use a service. We create our own!
 
 - [ ] BAD BUG: WHEN THE BROWSER BOOT UP THE FIRST TIME AND THE USER SIGNED IN FOR THE FIRST TIME, WHEN GOING TO PROFILE PAGE,
 STUFF DONT LOAD PROPERLY FOR SOME REASON AND THE USER MUST RELOAD THE PAGE FOR IT TO WORK THEREAFTER!
 
-- [ ] Tags Per Post
 - [ ] Add Views per post
-
-- [ ] After basic dashboard posts, go back to homepage and implement 'see user posts' thingyi
+- [ ] Delete Post
+- [ ] Tags Per Post
 
 - [ ] Notification Design
   - [ ] Liked/Dislike comment noti

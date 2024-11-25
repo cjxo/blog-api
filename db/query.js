@@ -305,31 +305,48 @@ const toggleLikeDislike = async (comment_id, user_id, type) => {
   }
 };
 
-const toggleHeart = async (post_id, user_id) => {
-  // TODO: in the toggleLikeDislike, we should also delete when the like value is 0!
-  const SELECTSQL = `
-    SELECT * FROM bf_post_heart
-    WHERE (post_id = $1) AND (user_id = $2);
-  `;
+const setPostStatistics = async (post_id, user_id, statistics) => {
+  if (statistics.heart !== undefined) {
+    if (statistics.heart) {
+      const INSERTSQL = `
+        INSERT INTO bf_post_heart (user_id, post_id)
+        VALUES ($1, $2);
+      `;
+      await pool.query(INSERTSQL, [user_id, post_id]);
+    } else {
+      const DELETESQL = `
+        DELETE FROM bf_post_heart
+        WHERE (post_id = $1) AND (user_id = $2);
+      `;
 
-  const selectResult = await pool.query(SELECTSQL, [post_id, user_id]);
-  if (selectResult.rows.length) {
-    const DELETESQL = `
-      DELETE FROM bf_post_heart
+      await pool.query(DELETESQL, [post_id, user_id]);
+    }
+  }
+
+  if (statistics.comment_id !== undefined) {
+    const action = await toggleLikeDislike(statistics.comment_id, user_id, statistics.like);
+    return { like: action };
+  }
+
+  // damn javascript... or I am just not knowledgable...
+  if ((statistics.view !== undefined) && statistics.view) {
+    const SELECTSQL = `
+      SELECT * FROM bf_post_view
       WHERE (post_id = $1) AND (user_id = $2);
     `;
 
-    await pool.query(DELETESQL, [post_id, user_id]);
-    return "none";
-  } else {
-    const INSERTSQL = `
-      INSERT INTO bf_post_heart (user_id, post_id)
-      VALUES ($1, $2);
-    `;
-    await pool.query(INSERTSQL, [user_id, post_id]);
+    const selectResult = await pool.query(SELECTSQL, [post_id, user_id]);
+    if (selectResult.rows.length === 0) {
+      const INSERTSQL = `
+        INSERT INTO bf_post_view (user_id, post_id)
+        VALUES ($1, $2);
+      `;
 
-    return "heart";
+      await pool.query(INSERTSQL, [user_id, post_id]);
+    }
   }
+
+  return null;
 };
 
 const getPostStatistics = async (post_id, user_id) => {
@@ -386,7 +403,7 @@ export default {
   addCommentToPost,
   getAllComments,
   toggleLikeDislike,
-  toggleHeart,
+  setPostStatistics,
   getPostStatistics,
   updateUserDetail,
 };

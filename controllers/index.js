@@ -142,21 +142,6 @@ const toggleLikeDislike = async (req, res, next) => {
   }
 };
 
-const toggleHeart = async (req, res, next) => {
-  const post_id = req.params.postId;
-  const user_id = req.user.id || 0;
-
-  try {
-    const newValue = await db.toggleHeart(post_id, user_id);
-    res.json({
-      message: "Request Granted",
-      newValue,
-    });
-  } catch (err) {
-    next(err);
-  }
-};
-
 const getPostStatistics = async (req, res, next) => {
   const post_id = req.params.postId;
   const user_id = req.user.id || 0;
@@ -170,6 +155,20 @@ const getPostStatistics = async (req, res, next) => {
     next(err);
   }
 };
+
+const setPostStatistics = async (req, res, next) => {
+  const post_id = req.params.postId;
+  const user_id = req.user.id || 0;
+  const statistics = req.body;
+  try {
+    const result = await db.setPostStatistics(post_id, user_id, statistics);
+    console.log(result);
+    res.json({ message: "Request Granted", setData: result });
+  } catch (err) {
+    next(err);
+  }
+};
+
 export default {
   welcome,
   getAllPosts,
@@ -179,6 +178,6 @@ export default {
   postComment,
   getAllComments,
   toggleLikeDislike,
-  toggleHeart,
   getPostStatistics,
+  setPostStatistics,
 };
