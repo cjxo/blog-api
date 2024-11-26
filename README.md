@@ -113,9 +113,11 @@ STUFF DONT LOAD PROPERLY FOR SOME REASON AND THE USER MUST RELOAD THE PAGE FOR I
 
 - [X] Add Views per post
 - [X] Delete Post
-- [ ] Tags Per Post
 
 - [ ] One more test of jWT
+- [ ] SUBMIT!!!
+
+- [ ] Tags Per Post
 
 - [ ] Notification Design
   - [ ] Liked/Dislike comment noti

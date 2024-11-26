@@ -4,7 +4,7 @@ import bcrypt from "bcryptjs";
 import 'dotenv/config';
 
 const createAccessToken = (user) => {
-  return jwt.sign({ user }, process.env.ACCESS_TOKEN, { expiresIn: '1d' });
+  return jwt.sign({ user }, process.env.ACCESS_TOKEN, { expiresIn: '15m' });
 };
 
 const verifyToken = (req, res, next) => {
@@ -152,11 +152,20 @@ const acquireAccessAndRefreshTokens = async (req, res, next) => {
 
     const accessToken  = createAccessToken(desiredUser);
     let refreshToken = await db.getRefreshTokenFromUserID(user.id);
-    if (!refreshToken) {
+
+    if (refreshToken) {
+      try {
+        jwt.verify(refreshToken, process.env.REFRESH_TOKEN);
+        await db.increaseTokenRefCount(user.id);
+      } catch (err) {
+        console.log("HELLS YEAH");
+        await db.deleteRefreshTokenFromUser(user.id, true);
+        refreshToken = jwt.sign({ user: desiredUser }, process.env.REFRESH_TOKEN, { expiresIn: '30d' });
+        await db.insertRefreshTokenToUser(user.id, refreshToken);
+      }
+    } else {
       refreshToken = jwt.sign({ user: desiredUser }, process.env.REFRESH_TOKEN, { expiresIn: '30d' });
       await db.insertRefreshTokenToUser(user.id, refreshToken);
-    } else {
-      await db.increaseTokenRefCount(user.id);
     }
 
     res.cookie("refreshToken", refreshToken, {
@@ -191,7 +200,7 @@ const editUserDetail = async (req, res, next) => {
         username: req.body.newUsername,
       };
 
-      const refreshToken = jwt.sign({ user: desiredUser }, process.env.REFRESH_TOKEN, { expiresIn: '30d' });
+      const refreshToken = jwt.sign({ user: desiredUser }, process.env.REFRESH_TOKEN, { expiresIn: '' });
       await db.insertRefreshTokenToUser(parseInt(req.user.id), refreshToken);
       res.cookie("refreshToken", refreshToken, {
         httpOnly: true,
