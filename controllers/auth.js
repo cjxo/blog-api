@@ -78,7 +78,12 @@ const removeRefreshTokenFromUser = async (req, res, next) => {
       }
 
       await db.deleteRefreshTokenFromUser(user.id, false);
-      res.clearCookie("refreshToken", {path: "/"});
+      res.clearCookie("refreshToken", {
+        path: "/",
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: "None",
+      });
       res.status(204).json({ message: "Deleted refresh token. Logged Out." });
     });
   } catch (err) {
