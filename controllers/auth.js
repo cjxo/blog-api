@@ -28,6 +28,9 @@ const verifyToken = (req, res, next) => {
 const acquireNewAccessTokenFromRefreshToken = async (req, res, next) => {
   const refreshToken = req.cookies.refreshToken;
 
+
+  console.log(req.cookies);
+
   if (!refreshToken) {
     return res.status(401).json({ message: "Unauthorized: No token provided." });
   }
