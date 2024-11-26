@@ -78,7 +78,7 @@ const removeRefreshTokenFromUser = async (req, res, next) => {
       }
 
       await db.deleteRefreshTokenFromUser(user.id, false);
-      res.clearCookie("refreshToken");
+      res.clearCookie("refreshToken", {path: "/"});
       res.status(204).json({ message: "Deleted refresh token. Logged Out." });
     });
   } catch (err) {
@@ -173,6 +173,8 @@ const acquireAccessAndRefreshTokens = async (req, res, next) => {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       maxAge: 30 * 24 * 60 * 60 * 1000,
+      sameSite: "None",
+      path: "/",
     }).json({
       message: "Sign In Successful.",
       accessToken: accessToken,
@@ -206,6 +208,8 @@ const editUserDetail = async (req, res, next) => {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
         maxAge: 30 * 24 * 60 * 60 * 1000,
+        sameSite: "None",
+        path: "/",
       }).json({
         message: "Request Ganted",
       });
