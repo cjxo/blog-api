@@ -30,7 +30,7 @@ const acquireNewAccessTokenFromRefreshToken = async (req, res, next) => {
 
   console.log(refreshToken);
   if (!refreshToken) {
-    return res.status(401).json({ message: "Unauthorized: No token provided." });
+    return res.status(401).json({ message: "Unauthorized: No token provided." + JSON.stringify(req.cookies) });
   }
 
   try { 
