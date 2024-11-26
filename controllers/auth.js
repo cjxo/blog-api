@@ -58,6 +58,7 @@ const acquireNewAccessTokenFromRefreshToken = async (req, res, next) => {
 };
 
 const removeRefreshTokenFromUser = async (req, res, next) => {
+  console.log("HIH");
   const refreshToken = req.cookies.refreshToken;
   if (!refreshToken) {
     return res.status(401).json({ message: "Unauthorized: No token provided." });
