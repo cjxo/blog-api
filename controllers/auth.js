@@ -28,9 +28,8 @@ const verifyToken = (req, res, next) => {
 const acquireNewAccessTokenFromRefreshToken = async (req, res, next) => {
   const refreshToken = req.cookies.refreshToken;
 
-  console.log(refreshToken);
   if (!refreshToken) {
-    return res.status(401).json({ message: "Unauthorized: No token provided." + JSON.stringify(req.cookies) });
+    return res.status(401).json({ message: "Unauthorized: No token provided." });
   }
 
   try { 
@@ -173,7 +172,6 @@ const acquireAccessAndRefreshTokens = async (req, res, next) => {
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: "Strict",
       maxAge: 30 * 24 * 60 * 60 * 1000,
     }).json({
       message: "Sign In Successful.",
